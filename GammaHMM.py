@@ -146,6 +146,8 @@ class GammaHMM(BaseGammaHMM):
             obs = stats['obs']
             log_obs = stats['log_obs']
 
+            print(post, obs, log_obs)
+
             # IL PROBLEMA È QUA!!
 
             self.shape_ = post / (post * (np.log(post) - log_obs / post) - obs / post)
@@ -156,25 +158,27 @@ class GammaHMM(BaseGammaHMM):
 if __name__ == "__main__":
 
     # Generate a random sequence of gamma-distributed data from a 2-state HMM
-    # np.random.seed(0)
-    # random_state = check_random_state(0)
-    # n_samples = 1000
-    # n_features = 2
-    # n_components = 2
-    # X = np.concatenate([
-    #     gamma.rvs(a = 1, scale=3, size=(n_samples // 2, n_features)),
-    #     gamma.rvs(a = 3, scale=4, size=(n_samples // 2, n_features))
-    # ])
-    # # Shuffle X
-    # X = X[random_state.permutation(n_samples)]
-    # lengths = [n_samples]
-
-    hulls_df=pd.read_csv("data/hulls_df.csv")
-
-    X = hulls_df["HomeHull"].to_numpy()
-    Y = hulls_df["AwayHull"].to_numpy()
+    np.random.seed(0)
+    random_state = check_random_state(0)
+    n_samples = 1000
+    n_features = 1
+    n_components = 2
+    X = np.concatenate([
+        gamma.rvs(a = 1, scale=3, size=(n_samples // 2, n_features)),
+        gamma.rvs(a = 3, scale=4, size=(n_samples // 2, n_features))
+    ])
+    # Shuffle X
+    X = X[random_state.permutation(n_samples)]
+    lengths = [n_samples]
 
     print(X)
+
+    # hulls_df=pd.read_csv("data/hulls_df.csv")
+
+    # X = hulls_df["HomeHull"].to_numpy()
+    # Y = hulls_df["AwayHull"].to_numpy()
+
+    # print(X)
 
     # Fit the model
     model = GammaHMM(n_components=2, n_iter=100)
