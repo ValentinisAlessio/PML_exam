@@ -12,11 +12,14 @@ def Viterbi(observations: torch.tensor,
     """Viterbi algorithm to find the most probable state sequence.
     
     INPUTS:
-    - observations (torch.tensor): List of observations.
-    - states (torch.tensor): List of states.
-    - start_prob (torch.tensor): Initial state probabilities.
-    - trans_prob (torch.tensor): State transition probabilities.
-    - emit_params (torch.tensor): Parameters for the emission probabilities.
+    - observations (torch.tensor): A 2-dimensional tensor with the observations.
+    - initial_states_prob (torch.tensor): A 1-dimensional tensor with the initial probabilities of the states.
+    - transition_matrix (torch.tensor): A 2-dimensional tensor with the transition probabilities between states.
+    - shape_params1 (torch.tensor): A 1-dimensional tensor with the shape parameters of the first gamma distribution.
+    - rate_params1 (torch.tensor): A 1-dimensional tensor with the rate parameters of the first gamma distribution.
+    - shape_params2 (torch.tensor): A 1-dimensional tensor with the shape parameters of the second gamma distribution.
+    - rate_params2 (torch.tensor): A 1-dimensional tensor with the rate parameters of the second gamma distribution.
+    - theta (torch.tensor): A 1-dimensional tensor with the theta parameters of the copula.
     
     OUTPUTS:
     - (torch.tensor) Most likely sequence of states.
