@@ -1,19 +1,25 @@
 import torch
 from utils.CopulaHelpers import copulamodel_log_pdf
 
-def Viterbi(observations, initial_states_prob, transition_matrix,
-            shape_params1,rate_params1,shape_params2,rate_params2,theta):
+def Viterbi(observations: torch.tensor, 
+            initial_states_prob: torch.tensor, 
+            transition_matrix: torch.tensor,
+            shape_params1: torch.tensor,
+            rate_params1: torch.tensor,
+            shape_params2: torch.tensor,
+            rate_params2: torch.tensor,
+            theta: torch.tensor) -> torch.tensor:
     """Viterbi algorithm to find the most probable state sequence.
     
-    Args:
-        observations: List of observations.
-        states: List of states.
-        start_prob: Initial state probabilities.
-        trans_prob: State transition probabilities.
-        emit_params: Parameters for the emission probabilities.
+    INPUTS:
+    - observations (torch.tensor): List of observations.
+    - states (torch.tensor): List of states.
+    - start_prob (torch.tensor): Initial state probabilities.
+    - trans_prob (torch.tensor): State transition probabilities.
+    - emit_params (torch.tensor): Parameters for the emission probabilities.
     
-    Returns:
-        Most likely sequence of states.
+    OUTPUTS:
+    - (torch.tensor) Most likely sequence of states.
     """
     num_obs = observations.shape[0]
     num_states = transition_matrix.shape[0]
