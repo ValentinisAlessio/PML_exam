@@ -3,7 +3,19 @@ import pyro
 import pyro.distributions as dist
 from pyro import poutine
 
-def UnivariateHMM(sequence, hidden_dim, include_prior=True):
+def UnivariateHMM(sequence: torch.tensor, 
+                  hidden_dim: int, 
+                  include_prior: bool=True):
+    '''
+    Pyro Model for a Hidden Markov Model with a single univariate observation with Gamma emission distribution.
+    Structure of the model taken from the Pyro documentation:
+    https://pyro.ai/examples/hmm.html
+    
+    INPUTS:
+    - sequence (torch.tensor): A 1-dimensional tensor of observations.
+    - hidden_dim (int): The number of hidden states.
+    - include_prior (bool): If True, include priors for the parameters of the model.
+    '''
     length = len(sequence)
     with poutine.mask(mask=include_prior):
         # Transition probabilities

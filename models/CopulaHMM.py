@@ -4,7 +4,19 @@ import pyro.distributions as dist
 from pyro import poutine
 from utils.CopulaHelpers import copulamodel_log_pdf
 
-def CopulaHMM(sequence, hidden_dim, include_prior=True):
+def CopulaHMM(sequence: torch.tensor, 
+              hidden_dim: int, 
+              include_prior: bool=True):
+    '''
+    Pyro Model for a Hidden Markov Model with a bivariate observation with Copula emission distribution.
+    Structure of the model taken from the Pyro documentation:
+    https://pyro.ai/examples/hmm.html
+    
+    INPUTS:
+    - sequence (torch.tensor): A 2-dimensional tensor of observations.
+    - hidden_dim (int): The number of hidden states.
+    - include_prior (bool): If True, include priors for the parameters of the model.
+    '''
     n_obs = sequence.shape[0]
     with poutine.mask(mask=include_prior):
         #---------------------------------------------------------------------

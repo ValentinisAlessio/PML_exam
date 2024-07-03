@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-import Metrica_Viz as mviz
+import utils.Metrica_Viz as mviz
 import matplotlib.pyplot as plt
 from scipy.spatial import ConvexHull
 import glob
