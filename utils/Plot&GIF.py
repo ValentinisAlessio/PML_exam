@@ -9,7 +9,8 @@ from IPython.display import Image as IPImage
 from IPython.display import display
 
 def PlotPitch(home_pts: np.array,
-              away_pts,ball: np.array,
+              away_pts: np.array,
+              ball: np.array,
               fig_size: tuple = (12, 7),
               plotHulls: bool=True,
               plotAllPlayers: bool=True,

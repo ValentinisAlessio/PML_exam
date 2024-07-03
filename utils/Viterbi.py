@@ -31,33 +31,33 @@ def Viterbi(observations: torch.tensor,
     V = torch.zeros((num_states, num_obs))
     path = torch.zeros((num_states, num_obs), dtype=int)
     
-    # Initialize the base cases (t == 0)
+    # Compute the log probabilities for the initial states
+    log_initial_states_prob = torch.log(initial_states_prob)
+    log_transition_matrix = torch.log(transition_matrix)
+    
+    # Compute the log pdf for the first observation across all states
     for s in range(num_states):
-        V[s, 0] = torch.log(initial_states_prob[s]) + copulamodel_log_pdf(x=observations[0,0],
-                                                                          y=observations[0,1],
-                                                                          shape1=shape_params1[s],
-                                                                          rate1=rate_params1[s],
-                                                                          shape2=shape_params2[s],
-                                                                          rate2=rate_params2[s],
-                                                                          theta=theta[s])
+        V[s, 0] = log_initial_states_prob[s] + copulamodel_log_pdf(x=observations[0, 0],
+                                                                   y=observations[0, 1],
+                                                                   shape1=shape_params1[s],
+                                                                   rate1=rate_params1[s],
+                                                                   shape2=shape_params2[s],
+                                                                   rate2=rate_params2[s],
+                                                                   theta=theta[s])
         path[s, 0] = 0
     
-    # Run Viterbi for t > 0
+    # Vectorized Viterbi for t > 0
     for t in range(1, num_obs):
+        log_probs = torch.empty(num_states, num_states)
         for s in range(num_states):
-            prob_state = []
-            for s_prev in range(num_states):
-                prob = V[s_prev, t-1] + torch.log(transition_matrix[s_prev, s]) + copulamodel_log_pdf(x=observations[t,0],
-                                                                                                   y=observations[t,1],
-                                                                                                   shape1=shape_params1[s],
-                                                                                                   rate1=rate_params1[s],
-                                                                                                   shape2=shape_params2[s],
-                                                                                                   rate2=rate_params2[s],
-                                                                                                   theta=theta[s])
-                prob_state.append(prob)
-                
-            V[s, t] = max(prob_state)
-            path[s, t] = torch.argmax(torch.tensor(prob_state))
+            log_probs[:, s] = V[:, t-1] + log_transition_matrix[:, s] + copulamodel_log_pdf(x=observations[t, 0],
+                                                                                           y=observations[t, 1],
+                                                                                           shape1=shape_params1[s],
+                                                                                           rate1=rate_params1[s],
+                                                                                           shape2=shape_params2[s],
+                                                                                           rate2=rate_params2[s],
+                                                                                           theta=theta[s])
+        V[:, t], path[:, t] = log_probs.max(dim=0)
     
     # Backtrack to find the most probable state sequence
     optimal_path = torch.zeros(num_obs, dtype=int)
