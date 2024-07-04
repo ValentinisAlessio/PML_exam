@@ -31,15 +31,15 @@ class BivariateHMM:
         self.svi = None
 
     @classmethod
-    def from_posterior(cls, params):
+    def from_posterior(cls, posterior: dict):
         return cls(
-            hidden_states=params['probs_initial'].shape[0],
-            probs_initial=params['probs_initial'],
-            probs_x=params['probs_x'],
-            probs_alpha1=params['probs_alpha1'],
-            probs_beta1=params['probs_beta1'],
-            probs_alpha2=params['probs_alpha2'],
-            probs_beta2=params['probs_beta2']
+            hidden_states=posterior['probs_initial'].shape[0],
+            probs_initial=posterior['probs_initial'],
+            probs_x=posterior['probs_x'],
+            probs_alpha1=posterior['probs_alpha1'],
+            probs_beta1=posterior['probs_beta1'],
+            probs_alpha2=posterior['probs_alpha2'],
+            probs_beta2=posterior['probs_beta2']
         )
 
     def pyromodel(self, sequence: torch.tensor, include_prior=True):
