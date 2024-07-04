@@ -30,6 +30,18 @@ class BivariateHMM:
         self.elbo = None
         self.svi = None
 
+    @classmethod
+    def from_posterior(cls, params):
+        return cls(
+            hidden_states=params['probs_initial'].shape[0],
+            probs_initial=params['probs_initial'],
+            probs_x=params['probs_x'],
+            probs_alpha1=params['probs_alpha1'],
+            probs_beta1=params['probs_beta1'],
+            probs_alpha2=params['probs_alpha2'],
+            probs_beta2=params['probs_beta2']
+        )
+
     def pyromodel(self, sequence: torch.tensor, include_prior=True):
         '''
         Pyro Model for a Hidden Markov Model with a single univariate observation with Gamma emission distribution.
