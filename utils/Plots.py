@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import utils.Metrica_Viz as mviz
 import matplotlib.pyplot as plt
+import seaborn as sns
 from scipy.spatial import ConvexHull
 import glob
 from PIL import Image
@@ -130,3 +131,82 @@ def PlotGIF(home_xy: pd.DataFrame,
 
     # Display the GIF
     display(IPImage(gif_path))
+    
+def plotEPS_with_states(data : pd.DataFrame,home_goals:pd.DataFrame,away_goals: pd.DataFrame,home_shot: pd.DataFrame,away_shot: pd.DataFrame,class_colors : dict):
+    """
+    Args:
+        data (pd.DataFrame): dataframe with the EPS
+        home_goals (pd.DataFrame): dataframe with the home goals
+        away_goals (pd.DataFrame): dataframe with the home goals
+        home_shot (pd.DataFrame): dataframe with the home shots
+        away_shot (pd.DataFrame): dataframe with the away shots
+        class_colors (dict): dictionary with the colors for each state
+    Returns:
+        plt.Figure
+    """
+    n_states = len(data["State"].unique())
+    assert len(class_colors)==n_states
+    colors = data['State'].map(class_colors)
+    fig, axs = plt.subplots(2, 1, figsize=(36, 12))
+    # Home team's convex hull area
+    axs[0].vlines(data["Time [s]"]/60, ymin=0, ymax=data["HomeHull"], color=colors, linewidth=0.4)
+    axs[0].set_xlabel("Time [min]", fontsize=12,fontweight='normal');
+    axs[0].set_ylabel("Convex Hull Area", fontsize=12, fontweight='normal');
+    axs[0].set_title("Convex Hull Area over Time (Home team)", fontsize=15, fontweight='bold');
+    # add legend
+    for i, state in enumerate(list(range(n_states))):
+        axs[0].plot([], [], color=class_colors[int(state)], label=f'State {int(state)}')
+    axs[0].legend(title="State", title_fontsize='11', fontsize='11', loc='upper right');
+
+    # Away team's convex hull area
+    axs[1].vlines(data["Time [s]"]/60, ymin=0, ymax=data["AwayHull"],color=colors, linewidth=0.4)
+    axs[1].set_xlabel("Time [min]", fontsize=12,fontweight='normal');
+    axs[1].set_ylabel("Convex Hull Area", fontsize=12, fontweight='normal');
+    axs[1].set_title("Convex Hull Area over Time (Away team)", fontsize=15, fontweight='bold');
+    for i, state in enumerate(list(range(n_states))):
+        axs[1].plot([], [], color=class_colors[int(state)], label=f'State {int(state)}')
+    axs[1].legend(title="State", title_fontsize='11', fontsize='11', loc='upper right');
+    # add vertical lines for home shots
+    for t1,t2 in zip(home_shot["Start Time [s]"]/60,home_shot["End Time [s]"]/60):
+        axs[0].axvline(x=(t1+t2)/2, color='darkgreen', linestyle='--', linewidth=2.5) 
+        axs[1].axvline(x=(t1+t2)/2, color='darkgreen', linestyle='--', linewidth=2.5)
+    for t1,t2 in zip(away_shot["Start Time [s]"]/60,away_shot["End Time [s]"]/60):
+        axs[0].axvline(x=(t1+t2)/2, color='black', linestyle='--', linewidth=2.5) 
+        axs[1].axvline(x=(t1+t2)/2, color='black', linestyle='--', linewidth=2.5)
+    # # add vertical lines for home goals
+    for t1,t2 in zip(home_goals["Start Time [s]"]/60,home_goals["End Time [s]"]/60):
+        axs[0].axvline(x=(t1+t2)/2, color='darkgreen', linestyle='-', linewidth=3) 
+        axs[1].axvline(x=(t1+t2)/2, color='darkgreen', linestyle='-', linewidth=3)
+    # add vertical lines for away goals
+    for t1,t2 in zip(away_goals["Start Time [s]"]/60,away_goals["End Time [s]"]/60):
+        axs[0].axvline(x=(t1+t2)/2, color='black', linestyle='-', linewidth=3) 
+        axs[1].axvline(x=(t1+t2)/2, color='black', linestyle='-', linewidth=3)
+    # Manage space between subplots
+    plt.subplots_adjust(hspace=0.3)
+    plt.close(fig)
+    return fig    
+
+
+def plotEPS_distribution(data, class_colors):
+    """
+    Args:
+        data: pd.DataFrame
+        class_colors: dictionary with the colors for each state
+    Returns:
+        plt.Figure
+    """
+    n_states = len(data["State"].unique())
+    assert len(class_colors)==n_states
+    
+    fig, ax = plt.subplots()
+    sns.kdeplot(
+        data=data,
+        x="HomeHull", 
+        y="AwayHull", 
+        hue="State", 
+        palette=class_colors,
+        ax=ax
+    )
+    ax.set_title("Bivariate KDE for the Convex Hull Areas of Home and Away Teams (by state)")
+    plt.close(fig)
+    return fig
