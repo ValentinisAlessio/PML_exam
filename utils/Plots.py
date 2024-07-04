@@ -8,10 +8,12 @@ import glob
 from PIL import Image
 from IPython.display import Image as IPImage
 from IPython.display import display
+import os
 
-def PlotPitch(home_pts: np.array,
-              away_pts: np.array,
-              ball: np.array,
+def PlotPitch(home_xy: pd.DataFrame,
+              away_xy: pd.DataFrame,
+              frame: int,
+              lag: int=0,
               fig_size: tuple = (12, 7),
               plotHulls: bool=True,
               plotAllPlayers: bool=True,
@@ -29,6 +31,27 @@ def PlotPitch(home_pts: np.array,
     OUTPUT:
     - fig: matplotlib figure
     """
+    #--------------------------------------------------------------------------------------------------------
+    # Retrieve the data for the frame
+    
+    home_data=home_xy.iloc[frame-lag,:] #-50 since the match start
+    away_data=away_xy.iloc[frame-lag,:]
+    home_data=home_data.dropna()
+    away_data=away_data.dropna()
+    ball=np.array(home_data[-2:])
+    home_data= home_data[4:-2] #exclude both the goalkeeper and the ball
+    away_data= away_data[4:-2] #exclude both the goalkeeper and the ball
+    
+    # divide x and y
+    home_data_x=home_data[home_data.index.str.contains('_x')]
+    home_data_y=home_data[home_data.index.str.contains('_y')]
+    away_data_x=away_data[away_data.index.str.contains('_x')]
+    away_data_y=away_data[away_data.index.str.contains('_y')]
+    
+    # Coordinates
+    home_pts= np.array([[x,y] for x,y in zip(home_data_x,home_data_y)])
+    away_pts= np.array([[x,y] for x,y in zip(away_data_x,away_data_y)])
+    
     #--------------------------------------------------------------------------------------------------------
     # Call plot_pitch to get fig and ax
     fig, ax = mviz.plot_pitch()
@@ -75,8 +98,11 @@ def PlotPitch(home_pts: np.array,
 
 def PlotGIF(home_xy: pd.DataFrame, 
             away_xy: pd.DataFrame, 
-            initial_frame: int=0, 
-            final_frame: int=2101) -> None:
+            initial_frame: int=0,
+            final_frame: int=100,
+            lag: int=0,
+            gifname=None,
+            title=None) -> None:
     """
     Function to create and display a GIF with the convex hulls of the home and away teams.
     The function saves the images in the figs folder and the GIF in the gifs folder.
@@ -88,36 +114,20 @@ def PlotGIF(home_xy: pd.DataFrame,
     OUTPUT:
     - GIF displayed in the notebook
     """
-    # Plotting the convex hulls for all frames from 1000 to 1200
-    for frame in range(initial_frame,final_frame):
-        #--------------------------------------------------------------------
-        # Retrieve the data for the frame
-        home_data=home_xy.iloc[frame,:]
-        away_data=away_xy.iloc[frame,:]
-        home_data=home_data.dropna()
-        away_data=away_data.dropna()
-        ball=np.array(home_data[-2:])
-        home_data= home_data[4:-2] #exclude both the goalkeeper and the ball
-        away_data= away_data[4:-2] #exclude both the goalkeeper and the ball
-        #--------------------------------------------------------------------
-        # divide x and y
-        home_data_x=home_data[home_data.index.str.contains('_x')]
-        home_data_y=home_data[home_data.index.str.contains('_y')]
-        away_data_x=away_data[away_data.index.str.contains('_x')]
-        away_data_y=away_data[away_data.index.str.contains('_y')]
-        #--------------------------------------------------------------------
-        # Coordinates
-        home_pts= np.array([[x,y] for x,y in zip(home_data_x,home_data_y)])
-        away_pts= np.array([[x,y] for x,y in zip(away_data_x,away_data_y)])
-        #--------------------------------------------------------------------
-        curr_plot=PlotPitch(home_pts=home_pts, away_pts=away_pts, ball=ball,plotHulls=True,plotAllPlayers=True)
+    # Eliminate the figs directory
+    os.system("rm -rf figs")
+    os.system("mkdir figs")
+    
+    # Plotting the convex hulls for all frames in the range
+    for frame in range(initial_frame,final_frame+1):     
+        curr_plot=PlotPitch(home_xy=home_xy,away_xy=away_xy,frame=frame,lag=lag,plotHulls=True,plotAllPlayers=True,title=title)
         #save it
         curr_plot.savefig(f'figs/convex_hulls_{frame}.png', dpi=300, bbox_inches='tight')
 
     # Generate the GIF
 
     # Load all the saved images
-    image_files = sorted(glob.glob('figs/convex_hulls_*.png'), key=lambda x: int(x.split('_')[-1].split('.')[0]))[49:200]
+    image_files = sorted(glob.glob('figs/convex_hulls_*.png'), key=lambda x: int(x.split('_')[-1].split('.')[0]))
 
     # Create a list of images
     # Desired GIF dimensions
@@ -126,11 +136,10 @@ def PlotGIF(home_xy: pd.DataFrame,
     images = [Image.open(image).resize((gif_width, gif_height), Image.Resampling.LANCZOS) for image in image_files]
 
     # Save as a GIF
-    gif_path = 'gifs/convex_hulls.gif'
-    images[0].save(gif_path, save_all=True, append_images=images, duration=0.0001, loop=0)
+    images[0].save(gifname, save_all=True, append_images=images, duration=0.0001, loop=0)
 
     # Display the GIF
-    display(IPImage(gif_path))
+    display(IPImage(gifname))
     
 def plotEPS_with_states(data : pd.DataFrame,home_goals:pd.DataFrame,away_goals: pd.DataFrame,home_shot: pd.DataFrame,away_shot: pd.DataFrame,class_colors : dict):
     """
