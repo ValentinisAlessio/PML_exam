@@ -156,5 +156,92 @@ class BivariateHMM:
             AwayMean= (self.probs_alpha2[state]/self.probs_beta2[state])*100
             print(f">> Mean of the Convex Hull for home team (STATE {state}): {HomeMean:.2f} m^2")
             print(f">> Mean of the Convex Hull for away team (STATE {state}): {AwayMean:.2f} m^2")
-            
-            
+
+    def viterbi(self,observations: torch.tensor) -> torch.tensor:
+        """Viterbi algorithm to find the most probable state sequence.
+        INPUTS:
+        - observations (torch.tensor): A 2-dimensional tensor with the observations
+        OUTPUTS:
+        - (torch.tensor) Most likely sequence of states.
+        """
+        
+        num_obs = observations.shape[0]
+        
+        # Initialize the dynamic programming table
+        V = torch.zeros((self.hidden_states, num_obs))
+        path = torch.zeros((self.hidden_states, num_obs), dtype=int)
+        
+        # Compute the log probabilities for the initial states
+        log_initial_states_prob = torch.log(self.probs_initial)
+        log_transition_matrix = torch.log(self.probs_x)
+        
+        # Compute the log pdf for the first observation across all states
+        for s in range(self.hidden_states):
+            V[s, 0] = log_initial_states_prob[s] + \
+                            dist.Gamma(self.probs_alpha1[s], self.probs_beta1[s]).log_prob(observations[0, 0]) + \
+                            dist.Gamma(self.probs_alpha2[s], self.probs_beta2[s]).log_prob(observations[0, 1])
+            path[s, 0] = 0
+        
+        # Vectorized Viterbi for t > 0
+        for t in range(1, num_obs):
+            log_probs = torch.empty(self.hidden_states, self.hidden_states)
+            for s in range(self.hidden_states):
+                log_probs[:, s] = V[:, t-1] + log_transition_matrix[:, s] + \
+                                    dist.Gamma(self.probs_alpha1[s], self.probs_beta1[s]).log_prob(observations[t, 0]) + \
+                                    dist.Gamma(self.probs_alpha2[s], self.probs_beta2[s]).log_prob(observations[t, 1])
+            V[:, t], path[:, t] = log_probs.max(dim=0)
+        
+        # Backtrack to find the most probable state sequence
+        optimal_path = torch.zeros(num_obs, dtype=int)
+        optimal_path[num_obs-1] = torch.argmax(V[:, num_obs-1])
+        
+        for t in range(num_obs-2, -1, -1):
+            optimal_path[t] = path[optimal_path[t+1], t+1]
+        
+        return optimal_path
+    
+    def compute_log_likelihood(self,observations: torch.tensor) -> torch.tensor:
+        """
+        Compute the likelihood of the observations given the model parameters.
+        INPUTS:
+        - observations (torch.tensor): A 2-dimensional tensor with the observations.
+        OUTPUTS:
+        - (torch.tensor) Log likelihood of the observations given the model parameters.
+        """
+        
+        num_obs = observations.shape[0]
+    
+        # Initialize the dynamic programming table
+        V = torch.zeros((self.hidden_states, num_obs))
+        
+        # Compute the log probabilities for the initial states
+        log_initial_states_prob = torch.log(self.probs_initial)
+        log_transition_matrix = torch.log(self.probs_x)
+        
+        # Compute the log pdf for the first observation across all states
+        for s in range(self.hidden_states):
+            V[s, 0] = log_initial_states_prob[s] + \
+                            dist.Gamma(self.probs_alpha1[s], self.probs_beta1[s]).log_prob(observations[0, 0]) + \
+                            dist.Gamma(self.probs_alpha2[s], self.probs_beta2[s]).log_prob(observations[0, 1])
+        
+        # Vectorized Viterbi for t > 0
+        for t in range(1, num_obs):
+            log_probs = torch.empty(self.hidden_states, self.hidden_states)
+            for s in range(self.hidden_states):
+                log_probs[:, s] = V[:, t-1] + log_transition_matrix[:, s] + \
+                                    dist.Gamma(self.probs_alpha1[s], self.probs_beta1[s]).log_prob(observations[t, 0]) + \
+                                    dist.Gamma(self.probs_alpha2[s], self.probs_beta2[s]).log_prob(observations[t, 1])
+            V[:, t] = torch.logsumexp(log_probs, dim=0)
+
+        return torch.logsumexp(V[:, num_obs-1], dim=0)          
+    
+    def AIC(self,observations: torch.tensor):
+        """
+        Compute the Akaike Information Criterion (AIC) for the model.
+        INPUTS:
+        - observations (torch.tensor): A 2-dimensional tensor with the observations.
+        OUTPUTS:
+        - (float) The AIC value for the model.
+        """
+        n_params= self.hidden_states*6 + self.hidden_states**2
+        return -2 * self.compute_log_likelihood(observations) + 2*n_params
