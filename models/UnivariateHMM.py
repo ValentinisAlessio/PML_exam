@@ -63,12 +63,12 @@ class UnivariateHMM:
             #---------------------------------------------------------------------
             # Prior for the parameters of emission probabilities 
             probs_alpha = pyro.sample(
-                "probs_alpha1",
+                "probs_alpha",
                 dist.Gamma(concentration=15.0, rate=0.8).expand([self.hidden_states]).to_event(1)
             )
 
             probs_beta = pyro.sample(
-                "probs_beta1",
+                "probs_beta",
                 dist.Gamma(concentration=1.0, rate=1.0).expand([self.hidden_states]).to_event(1)
             )
         
