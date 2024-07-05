@@ -252,3 +252,29 @@ class BivariateHMM:
         """
         n_params= self.hidden_states*6 + self.hidden_states**2
         return -2 * self.compute_log_likelihood(observations) + 2*n_params
+    
+    def predict(self,num_pred : int,initial_state: torch.tensor) -> torch.tensor:    
+        # Predict the sequence of states
+        states=torch.tensor([initial_state])
+        for p in range(num_pred):
+            x = pyro.sample(
+                f"x_{p}",
+                dist.Categorical(self.probs_x[states[-1],:])
+            )
+            states=torch.cat((self.hidden_states,torch.tensor([x])))
+        # Predict the areas
+        alpha1=self.probs_alpha1[states[1:]]
+        alpha2=self.probs_alpha2[states[1:]]
+        beta1=self.probs_beta1[states[1:]]
+        beta2=self.probs_beta2[states[1:]]
+        X= pyro.sample(
+            f"X",
+            dist.Gamma(alpha1, beta1)
+        )
+        Y= pyro.sample(
+            f"Y",
+            dist.Gamma(alpha2, beta2)
+        )
+        areas = torch.stack((X, Y), dim=1)
+            
+        return states[1:], areas
