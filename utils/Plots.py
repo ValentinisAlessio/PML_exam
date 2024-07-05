@@ -199,7 +199,72 @@ def plotEPS_with_states(data : pd.DataFrame,class_colors : dict,home_goals:pd.Da
     # Manage space between subplots
     plt.subplots_adjust(hspace=0.3)
     plt.close(fig)
+    return fig
+
+
+def plotEPS_with_states_single(home_data : pd.DataFrame, away_data: pd.DataFrame, 
+                            class_colors : dict,
+                            home_goals:pd.DataFrame=None,away_goals: pd.DataFrame=None,home_shot: pd.DataFrame=None,away_shot: pd.DataFrame=None):
+    """
+    Args:
+        data (pd.DataFrame): dataframe with the EPS
+        home_goals (pd.DataFrame): dataframe with the home goals
+        away_goals (pd.DataFrame): dataframe with the home goals
+        home_shot (pd.DataFrame): dataframe with the home shots
+        away_shot (pd.DataFrame): dataframe with the away shots
+        class_colors (dict): dictionary with the colors for each state
+    Returns:
+        plt.Figure
+    """
+    n_states = len(home_data["State"].unique())
+    assert len(class_colors)==n_states
+    colors_home = home_data['State'].map(class_colors)
+    colors_away = away_data['State'].map(class_colors)
+    fig, axs = plt.subplots(2, 1, figsize=(36, 12))
+    # fig, axs = plt.subplots(figsize=(36, 6))
+    # Home team's convex hull area
+    axs[0].vlines(home_data["Time [s]"]/60, ymin=0, ymax=home_data["HomeHull"], color=colors_home, linewidth=0.4)
+    axs[0].set_xlabel("Time [min]", fontsize=12,fontweight='normal');
+    axs[0].set_ylabel("Convex Hull Area", fontsize=12, fontweight='normal');
+    axs[0].set_title("Convex Hull Area over Time (Home team)", fontsize=15, fontweight='bold');
+    # add legend
+    for i, state in enumerate(list(range(n_states))):
+        axs[0].plot([], [], color=class_colors[int(state)], label=f'State {int(state)}')
+    axs[0].legend(title="State", title_fontsize='11', fontsize='11', loc='upper right');
+
+    # Away team's convex hull area
+    axs[1].vlines(away_data["Time [s]"]/60, ymin=0, ymax=away_data["AwayHull"],color=colors_away, linewidth=0.4)
+    axs[1].set_xlabel("Time [min]", fontsize=12,fontweight='normal');
+    axs[1].set_ylabel("Convex Hull Area", fontsize=12, fontweight='normal');
+    axs[1].set_title("Convex Hull Area over Time (Away team)", fontsize=15, fontweight='bold');
+    for i, state in enumerate(list(range(n_states))):
+        axs[1].plot([], [], color=class_colors[int(state)], label=f'State {int(state)}')
+    axs[1].legend(title="State", title_fontsize='11', fontsize='11', loc='upper right');
+    
+    if (home_shot is not None) and (away_shot is not None):
+        # add vertical lines for home shots
+        for t1,t2 in zip(home_shot["Start Time [s]"]/60,home_shot["End Time [s]"]/60):
+            axs[0].axvline(x=(t1+t2)/2, color='navy', linestyle='--', linewidth=3) 
+            axs[1].axvline(x=(t1+t2)/2, color='navy', linestyle='--', linewidth=3)
+        # add vertical lines for away shots
+        for t1,t2 in zip(away_shot["Start Time [s]"]/60,away_shot["End Time [s]"]/60):
+            axs[0].axvline(x=(t1+t2)/2, color='red', linestyle='--', linewidth=3) 
+            axs[1].axvline(x=(t1+t2)/2, color='red', linestyle='--', linewidth=3)
+            
+    if (home_goals is not None) and (away_goals is not None):    
+    # add vertical lines for home goals
+        for t1,t2 in zip(home_goals["Start Time [s]"]/60,home_goals["End Time [s]"]/60):
+            axs[0].axvline(x=(t1+t2)/2, color='navy', linestyle='-', linewidth=3.5) 
+            axs[1].axvline(x=(t1+t2)/2, color='navy', linestyle='-', linewidth=3.5)
+        # add vertical lines for away goals
+        for t1,t2 in zip(away_goals["Start Time [s]"]/60,away_goals["End Time [s]"]/60):
+            axs[0].axvline(x=(t1+t2)/2, color='red', linestyle='-', linewidth=3.5) 
+            axs[1].axvline(x=(t1+t2)/2, color='red', linestyle='-', linewidth=3.5)
+    # Manage space between subplots
+    plt.subplots_adjust(hspace=0.3)
+    plt.close(fig)
     return fig    
+
 
 
 def plotEPS_distribution(data, class_colors,title="EPS copula distribution (by state)"):
