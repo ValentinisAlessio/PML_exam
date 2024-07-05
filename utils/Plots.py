@@ -220,3 +220,20 @@ def plotEPS_distribution(data, class_colors,title="EPS copula distribution (by s
     ax.set_title(title)
     plt.close(fig)
     return fig
+
+def plotEPS_hist(data,class_colors):
+    fig, ax = plt.subplots(1, 2, figsize=(14, 5))  # Adjusted figsize for better visualization
+
+    sns.histplot(x=data["HomeHull"]*100, hue=data["State"], kde=True, palette=class_colors, alpha=0.2, ax=ax[0])
+    ax[0].set_xlabel("Convex Hull Area", fontsize=12, fontweight='normal')
+    ax[0].set_ylabel("Count", fontsize=12, fontweight='normal')
+    ax[0].set_title("Home Team Convex Hull Area by State", fontsize=15, fontweight='bold')
+
+    sns.histplot(x=data["AwayHull"], hue=data["State"], kde=True, palette=class_colors, alpha=0.2, ax=ax[1])
+    ax[1].set_xlabel("Convex Hull Area", fontsize=12, fontweight='normal')
+    ax[1].set_ylabel("Count", fontsize=12, fontweight='normal')
+    ax[1].set_title("Away Team Convex Hull Area by State", fontsize=15, fontweight='bold')
+
+    plt.subplots_adjust(hspace=0.45)
+    plt.close(fig)
+    return fig
