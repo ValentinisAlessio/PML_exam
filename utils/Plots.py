@@ -101,6 +101,7 @@ def PlotGIF(home_xy: pd.DataFrame,
             initial_frame: int=0,
             final_frame: int=100,
             lag: int=0,
+            step: int=1,
             gifname=None,
             title=None) -> None:
     """
@@ -119,7 +120,7 @@ def PlotGIF(home_xy: pd.DataFrame,
     os.system("mkdir figs")
     
     # Plotting the convex hulls for all frames in the range
-    for frame in range(initial_frame,final_frame+1):     
+    for frame in range(initial_frame,final_frame+1,step):     
         curr_plot=PlotPitch(home_xy=home_xy,away_xy=away_xy,frame=frame,lag=lag,plotHulls=True,plotAllPlayers=True,title=title)
         #save it
         curr_plot.savefig(f'figs/convex_hulls_{frame}.png', dpi=300, bbox_inches='tight')
