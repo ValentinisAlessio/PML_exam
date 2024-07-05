@@ -151,6 +151,7 @@ class BivariateHMM:
         self.probs_beta2 = self.posterior['probs_beta2']
         
     def print_estimates(self):
+        print("-" * 68)
         for state in range(self.hidden_states):
             HomeMean= (self.probs_alpha1[state]/self.probs_beta1[state])*100
             HomeStd= torch.sqrt((self.probs_alpha1[state]/self.probs_beta1[state]**2))*100
@@ -160,6 +161,7 @@ class BivariateHMM:
             print(f">> Std of the Convex Hull for home team (STATE {state}): {HomeStd:.2f} m^2")
             print(f">> Mean of the Convex Hull for away team (STATE {state}): {AwayMean:.2f} m^2")
             print(f">> Std of the Convex Hull for away team (STATE {state}): {AwayStd:.2f} m^2")
+            print("-" * 68)
 
     def viterbi(self,observations: torch.tensor) -> torch.tensor:
         """Viterbi algorithm to find the most probable state sequence.
