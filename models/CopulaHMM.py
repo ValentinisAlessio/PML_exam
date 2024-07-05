@@ -172,10 +172,11 @@ class CopulaHMM():
             HomeStd= torch.sqrt((self.probs_alpha1[state]/self.probs_beta1[state]**2))*100
             AwayMean= (self.probs_alpha2[state]/self.probs_beta2[state])*100
             AwayStd= torch.sqrt((self.probs_alpha2[state]/self.probs_beta2[state]**2))*100
-            print(f">> Mean of the Convex Hull for home team (STATE {state}): {HomeMean:.2f} m^2")
-            print(f">> Std of the Convex Hull for home team (STATE {state}): {HomeStd:.2f} m^2")
-            print(f">> Mean of the Convex Hull for away team (STATE {state}): {AwayMean:.2f} m^2")
-            print(f">> Std of the Convex Hull for away team (STATE {state}): {AwayStd:.2f} m^2")
+            print(f">> State {state}:")
+            print(f">> Mean of the Convex Hull for home team: {HomeMean:.2f} m^2")
+            print(f">> Std of the Convex Hull for home team: {HomeStd:.2f} m^2")
+            print(f">> Mean of the Convex Hull for away team: {AwayMean:.2f} m^2")
+            print(f">> Std of the Convex Hull for away team: {AwayStd:.2f} m^2")
             print("-" * 68)
 
     def viterbi(self,observations: torch.tensor) -> torch.tensor:
