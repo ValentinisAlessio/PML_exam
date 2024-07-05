@@ -142,7 +142,7 @@ def PlotGIF(home_xy: pd.DataFrame,
     # Display the GIF
     display(IPImage(gifname))
     
-def plotEPS_with_states(data : pd.DataFrame,home_goals:pd.DataFrame,away_goals: pd.DataFrame,home_shot: pd.DataFrame,away_shot: pd.DataFrame,class_colors : dict):
+def plotEPS_with_states(data : pd.DataFrame,class_colors : dict,home_goals:pd.DataFrame=None,away_goals: pd.DataFrame=None,home_shot: pd.DataFrame=None,away_shot: pd.DataFrame=None):
     """
     Args:
         data (pd.DataFrame): dataframe with the EPS
@@ -176,21 +176,26 @@ def plotEPS_with_states(data : pd.DataFrame,home_goals:pd.DataFrame,away_goals: 
     for i, state in enumerate(list(range(n_states))):
         axs[1].plot([], [], color=class_colors[int(state)], label=f'State {int(state)}')
     axs[1].legend(title="State", title_fontsize='11', fontsize='11', loc='upper right');
-    # add vertical lines for home shots
-    for t1,t2 in zip(home_shot["Start Time [s]"]/60,home_shot["End Time [s]"]/60):
-        axs[0].axvline(x=(t1+t2)/2, color='navy', linestyle='--', linewidth=3) 
-        axs[1].axvline(x=(t1+t2)/2, color='navy', linestyle='--', linewidth=3)
-    for t1,t2 in zip(away_shot["Start Time [s]"]/60,away_shot["End Time [s]"]/60):
-        axs[0].axvline(x=(t1+t2)/2, color='red', linestyle='--', linewidth=3) 
-        axs[1].axvline(x=(t1+t2)/2, color='red', linestyle='--', linewidth=3)
-    # # add vertical lines for home goals
-    for t1,t2 in zip(home_goals["Start Time [s]"]/60,home_goals["End Time [s]"]/60):
-        axs[0].axvline(x=(t1+t2)/2, color='navy', linestyle='-', linewidth=3.5) 
-        axs[1].axvline(x=(t1+t2)/2, color='navy', linestyle='-', linewidth=3.5)
-    # add vertical lines for away goals
-    for t1,t2 in zip(away_goals["Start Time [s]"]/60,away_goals["End Time [s]"]/60):
-        axs[0].axvline(x=(t1+t2)/2, color='red', linestyle='-', linewidth=3.5) 
-        axs[1].axvline(x=(t1+t2)/2, color='red', linestyle='-', linewidth=3.5)
+    
+    if (home_shot is not None) and (away_shot is not None):
+        # add vertical lines for home shots
+        for t1,t2 in zip(home_shot["Start Time [s]"]/60,home_shot["End Time [s]"]/60):
+            axs[0].axvline(x=(t1+t2)/2, color='navy', linestyle='--', linewidth=3) 
+            axs[1].axvline(x=(t1+t2)/2, color='navy', linestyle='--', linewidth=3)
+        # add vertical lines for away shots
+        for t1,t2 in zip(away_shot["Start Time [s]"]/60,away_shot["End Time [s]"]/60):
+            axs[0].axvline(x=(t1+t2)/2, color='red', linestyle='--', linewidth=3) 
+            axs[1].axvline(x=(t1+t2)/2, color='red', linestyle='--', linewidth=3)
+            
+    if (home_goals is not None) and (away_goals is not None):    
+    # add vertical lines for home goals
+        for t1,t2 in zip(home_goals["Start Time [s]"]/60,home_goals["End Time [s]"]/60):
+            axs[0].axvline(x=(t1+t2)/2, color='navy', linestyle='-', linewidth=3.5) 
+            axs[1].axvline(x=(t1+t2)/2, color='navy', linestyle='-', linewidth=3.5)
+        # add vertical lines for away goals
+        for t1,t2 in zip(away_goals["Start Time [s]"]/60,away_goals["End Time [s]"]/60):
+            axs[0].axvline(x=(t1+t2)/2, color='red', linestyle='-', linewidth=3.5) 
+            axs[1].axvline(x=(t1+t2)/2, color='red', linestyle='-', linewidth=3.5)
     # Manage space between subplots
     plt.subplots_adjust(hspace=0.3)
     plt.close(fig)

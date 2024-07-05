@@ -285,7 +285,7 @@ class CopulaHMM():
         n_params= self.hidden_states*6 + self.hidden_states**2
         return -2 * self.compute_log_likelihood(observations) + 2*n_params
     
-    def predict(self,num_pred : int,initial_state: torch.tensor) -> torch.tensor:
+    def predict(self,num_pred : int,initial_state: int) -> tuple:
     
         # Predict the sequence of states
         states=torch.tensor([initial_state])
@@ -294,7 +294,7 @@ class CopulaHMM():
                 f"x_{p}",
                 dist.Categorical(self.probs_x[states[-1],:])
             )
-            states=torch.cat((self.hidden_states,torch.tensor([x])))
+            states=torch.cat((states,torch.tensor([x])))
         
         # Predict the areas
         alpha1=self.probs_alpha1[states[1:]]
