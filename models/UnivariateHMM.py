@@ -5,7 +5,7 @@ from pyro import poutine
 import pyro.distributions as dist
 from pyro.infer import SVI, TraceEnum_ELBO
 from pyro.infer.autoguide import AutoDelta
-from pyro.optim import Adam,ClippedAdam
+from pyro.optim import Adam
 import pandas as pd
 import tqdm
 
